@@ -17,28 +17,31 @@ namespace MyBoards.Entities
         public DbSet<Comment> Comments { get; set; }
 
 
-        // konfiguracja modelu bazy danych
+        // database model configuration
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<WorkItem>()
-                .Property(x => x.State)
-                .IsRequired();
-
-            modelBuilder.Entity<WorkItem>()
-                .Property(x => x.IterationPath)
-                .HasColumnName("Iteration_Path");
-
-            modelBuilder.Entity<WorkItem>()
-                .Property(x => x.Area)
-                .HasColumnType("varchar(200)");
-
             modelBuilder.Entity<WorkItem>(eb =>
             {
+                eb.Property(wi => wi.State).IsRequired();
+                eb.Property(wi => wi.Area).HasColumnType("varchar(200)");
                 eb.Property(wi => wi.IterationPath).HasColumnName("Iteration_Path");
                 eb.Property(wi => wi.Effort).HasColumnType("decimal(5, 2)");
                 eb.Property(wi => wi.EndDate).HasPrecision(3);
                 eb.Property(wi => wi.Activity).HasMaxLength(200);
                 eb.Property(wi => wi.RemainingWork).HasPrecision(14, 2);
+
+                // adding default values
+                eb.Property(wi => wi.Priority).HasDefaultValue(1);
+            });
+
+            // 
+            modelBuilder.Entity<Comment>(eb =>
+            {
+                // assign default current date using sql server
+                eb.Property(x => x.CreatedDate).HasDefaultValueSql("getutcdate()");
+
+                // using EF to assign UpdatedDate
+                eb.Property(x => x.UpdatedDate).ValueGeneratedOnUpdate();
             });
         }
     }
