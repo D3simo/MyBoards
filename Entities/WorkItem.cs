@@ -24,5 +24,8 @@ namespace MyBoards.Entities
         public decimal RemainingWork { get; set; }
 
         public string Type { get; set; }
+
+        // configure relation 1:n with Comment entity // add default blank list
+        public List<Comment> Comments { get; set; } = new List<Comment>();
     }
 }

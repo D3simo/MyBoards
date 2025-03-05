@@ -43,6 +43,15 @@ namespace MyBoards.Entities
                 // using EF to assign UpdatedDate
                 eb.Property(x => x.UpdatedDate).ValueGeneratedOnUpdate();
             });
+
+            modelBuilder.Entity<User>()
+
+                // configure 1:1 relation
+                .HasOne(u => u.Address)
+                .WithOne(a => a.User)
+
+                // configure foreign key
+                .HasForeignKey<Address>(a => a.UserId);
         }
     }
 }

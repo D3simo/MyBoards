@@ -9,5 +9,10 @@
         public string Street { get; set; }
         public string PostalCode { get; set; }
 
+        // Reference do User entity
+        public User User { get; set; }
+
+        // Foreign key to User
+         public Guid UserId { get; set; }
     }
 }

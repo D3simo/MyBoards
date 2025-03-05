@@ -8,5 +8,10 @@
         public string Author { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime? UpdatedDate { get; set; }
+
+        // configure relation with WorkItem
+        public WorkItem WorkItem { get; set; }
+        // configure foreign key, type is based on other table key column
+        public int WorkItemId { get; set; }
     }
 }
