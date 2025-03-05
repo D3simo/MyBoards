@@ -27,5 +27,9 @@ namespace MyBoards.Entities
 
         // configure relation 1:n with Comment entity // add default blank list
         public List<Comment> Comments { get; set; } = new List<Comment>();
+
+        // configure relation n:1 with User entity
+        public User User { get; set; }
+        public Guid UserId { get; set; }
     }
 }

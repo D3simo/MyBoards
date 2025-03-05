@@ -30,6 +30,16 @@ namespace MyBoards.Entities
                 eb.Property(wi => wi.Activity).HasMaxLength(200);
                 eb.Property(wi => wi.RemainingWork).HasPrecision(14, 2);
 
+                // configure relation with Comment entity
+                eb.HasMany(w => w.Comments)
+                .WithOne(c => c.WorkItem)
+                .HasForeignKey(c => c.WorkItemId);
+
+                // configure relations with User entity
+                eb.HasOne(w => w.User)
+                .WithMany(c => c.WorkItem)
+                .HasForeignKey(c => c.UserId);
+
                 // adding default values
                 eb.Property(wi => wi.Priority).HasDefaultValue(1);
             });
