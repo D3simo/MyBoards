@@ -15,7 +15,7 @@ namespace MyBoards.Entities
         public DbSet<User> Users { get; set; }
         public DbSet<Tag> Tags { get; set; }
         public DbSet<Comment> Comments { get; set; }
-
+        public DbSet<WorkItemTag> WorkItemTags { get; set; }
 
         // database model configuration
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -42,6 +42,25 @@ namespace MyBoards.Entities
 
                 // adding default values
                 eb.Property(wi => wi.Priority).HasDefaultValue(1);
+
+                // configure relationship between Tags and WorkItem
+                eb.HasMany(w => w.Tags)
+                .WithMany(c => c.WorkItems)
+                // which entity do we use for this relationship
+                .UsingEntity<WorkItemTag>(
+                    w => w.HasOne(wit => wit.Tag)
+                    .WithMany()
+                    .HasForeignKey(wit => wit.TagId),
+
+                    w => w.HasOne(wit => wit.WorkItem)
+                    .WithMany()
+                    .HasForeignKey(wit => wit.WorkItemId),
+
+                    wit =>
+                    {
+                        wit.HasKey(x => new { x.TagId, x.WorkItemId });
+                        wit.Property(x => x.PublicationDate).HasDefaultValueSql("getutcdate()");
+                    });
             });
 
             // 
