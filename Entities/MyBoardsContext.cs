@@ -15,14 +15,13 @@ namespace MyBoards.Entities
         public DbSet<User> Users { get; set; }
         public DbSet<Tag> Tags { get; set; }
         public DbSet<Comment> Comments { get; set; }
-        public DbSet<WorkItemTag> WorkItemTags { get; set; }
+        public DbSet<WorkItemState> WorkItemStates { get; set; }
 
         // database model configuration
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<WorkItem>(eb =>
             {
-                eb.Property(wi => wi.State).IsRequired();
                 eb.Property(wi => wi.Area).HasColumnType("varchar(200)");
                 eb.Property(wi => wi.IterationPath).HasColumnName("Iteration_Path");
                 eb.Property(wi => wi.Effort).HasColumnType("decimal(5, 2)");
@@ -61,6 +60,11 @@ namespace MyBoards.Entities
                         wit.HasKey(x => new { x.TagId, x.WorkItemId });
                         wit.Property(x => x.PublicationDate).HasDefaultValueSql("getutcdate()");
                     });
+
+                // relationship with WorkItemState
+                eb.HasOne(w => w.State)
+                .WithMany()
+                .HasForeignKey(c => c.StateId);
             });
 
             // 
@@ -81,6 +85,12 @@ namespace MyBoards.Entities
 
                 // configure foreign key
                 .HasForeignKey<Address>(a => a.UserId);
+
+            modelBuilder.Entity<WorkItemState>(eb =>
+            {
+                eb.Property(x => x.State).HasMaxLength(50);
+                eb.Property(x => x.State).IsRequired();
+            });
         }
     }
 }
