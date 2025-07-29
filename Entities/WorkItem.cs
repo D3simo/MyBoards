@@ -7,7 +7,6 @@ namespace MyBoards.Entities
     {
         // Workitem properties
         public int Id { get; set; }
-        public string State { get; set; }
         public string Area { get; set; }
         public string IterationPath { get; set; }
         public int Priority { get; set; }
@@ -31,5 +30,11 @@ namespace MyBoards.Entities
         // configure relation n:1 with User entity
         public User User { get; set; }
         public Guid UserId { get; set; }
+
+        public List<Tag> Tags { get; set; }
+
+        // configure relation n:1 with WorkItemState entity
+        public WorkItemState State {  get; set; }  
+        public int StateId { get; set; }
     }
 }
