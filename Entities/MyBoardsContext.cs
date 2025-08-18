@@ -35,9 +35,13 @@ namespace MyBoards.Entities
                 .HasForeignKey(c => c.WorkItemId);
 
                 // configure relations with User entity
-                eb.HasOne(w => w.User)
+                eb.HasOne(w => w.Author)
                 .WithMany(c => c.WorkItem)
-                .HasForeignKey(c => c.UserId);
+                .HasForeignKey(c => c.AuthorId);
+
+                eb.HasMany(w => w.Tags)
+                .WithMany(t => t.WorkItems);
+
 
                 // adding default values
                 eb.Property(wi => wi.Priority).HasDefaultValue(1);
@@ -47,6 +51,9 @@ namespace MyBoards.Entities
                 .WithMany(c => c.WorkItems)
                 // which entity do we use for this relationship
                 .UsingEntity<WorkItemTag>(
+                    //for older .NET versions
+                    //.HasKey(c => new { c.TagId, c.WorkItemId });
+
                     w => w.HasOne(wit => wit.Tag)
                     .WithMany()
                     .HasForeignKey(wit => wit.TagId),
@@ -57,7 +64,8 @@ namespace MyBoards.Entities
 
                     wit =>
                     {
-                        wit.HasKey(x => new { x.TagId, x.WorkItemId });
+                        //for older .NET versions
+                        //wit.HasKey(x => new { x.TagId, x.WorkItemId });
                         wit.Property(x => x.PublicationDate).HasDefaultValueSql("getutcdate()");
                     });
 

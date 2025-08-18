@@ -28,13 +28,17 @@ namespace MyBoards.Entities
         public List<Comment> Comments { get; set; } = new List<Comment>();
 
         // configure relation n:1 with User entity
-        public User User { get; set; }
-        public Guid UserId { get; set; }
+        public User Author { get; set; }
+        public Guid AuthorId { get; set; }
 
         public List<Tag> Tags { get; set; }
 
         // configure relation n:1 with WorkItemState entity
         public WorkItemState State {  get; set; }  
         public int StateId { get; set; }
+
+        // configure relation n:1 with WorkItemTag entity
+        //for older .NET version
+        // public List<WorkItemTag> WorkItemTags { get; set; } = new List<WorkItemTag>();
     }
 }

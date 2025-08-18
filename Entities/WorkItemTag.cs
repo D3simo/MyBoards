@@ -1,7 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
-namespace MyBoards.Entities
+﻿namespace MyBoards.Entities
 {
     public class WorkItemTag
     {
