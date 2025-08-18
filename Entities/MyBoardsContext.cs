@@ -22,6 +22,11 @@ namespace MyBoards.Entities
         {
             modelBuilder.Entity<WorkItem>(eb =>
             {
+                // relation with WorkItemState
+                eb.HasOne(w => w.State)
+                .WithMany()
+                .HasForeignKey(w => w.StateId);
+
                 eb.Property(wi => wi.Area).HasColumnType("varchar(200)");
                 eb.Property(wi => wi.IterationPath).HasColumnName("Iteration_Path");
                 eb.Property(wi => wi.Effort).HasColumnType("decimal(5, 2)");
@@ -34,19 +39,14 @@ namespace MyBoards.Entities
                 .WithOne(c => c.WorkItem)
                 .HasForeignKey(c => c.WorkItemId);
 
-                // configure relations with User entity
+                // configure relation with User entity
                 eb.HasOne(w => w.Author)
                 .WithMany(c => c.WorkItem)
                 .HasForeignKey(c => c.AuthorId);
 
-                eb.HasMany(w => w.Tags)
-                .WithMany(t => t.WorkItems);
-
-
-                // adding default values
                 eb.Property(wi => wi.Priority).HasDefaultValue(1);
 
-                // configure relationship between Tags and WorkItem
+                // configure relation between Tags and WorkItem
                 eb.HasMany(w => w.Tags)
                 .WithMany(c => c.WorkItems)
                 // which entity do we use for this relationship
@@ -64,21 +64,14 @@ namespace MyBoards.Entities
 
                     wit =>
                     {
-                        //for older .NET versions
-                        //wit.HasKey(x => new { x.TagId, x.WorkItemId });
+                        wit.HasKey(x => new { x.TagId, x.WorkItemId });
                         wit.Property(x => x.PublicationDate).HasDefaultValueSql("getutcdate()");
                     });
-
-                // relationship with WorkItemState
-                eb.HasOne(w => w.State)
-                .WithMany()
-                .HasForeignKey(c => c.StateId);
             });
 
             // 
             modelBuilder.Entity<Comment>(eb =>
             {
-                // assign default current date using sql server
                 eb.Property(x => x.CreatedDate).HasDefaultValueSql("getutcdate()");
 
                 // using EF to assign UpdatedDate
@@ -90,8 +83,6 @@ namespace MyBoards.Entities
                 // configure 1:1 relation
                 .HasOne(u => u.Address)
                 .WithOne(a => a.User)
-
-                // configure foreign key
                 .HasForeignKey<Address>(a => a.UserId);
 
             modelBuilder.Entity<WorkItemState>(eb =>
