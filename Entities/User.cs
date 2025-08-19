@@ -13,6 +13,6 @@ namespace MyBoards.Entities
         public Address Address { get; set; }
 
         // configure relation 1:n with WorkItem entity // with blank list
-        public List<WorkItem> WorkItem { get; set; } = new List<WorkItem>();
+        public List<WorkItem> WorkItem { get; set; } = [];
     }
 }
