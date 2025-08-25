@@ -93,6 +93,11 @@ namespace MyBoards.Entities
 
                 // using EF to assign UpdatedDate
                 eb.Property(x => x.UpdatedDate).ValueGeneratedOnUpdate();
+
+                eb.HasOne(c => c.Author)
+                .WithMany(u => u.Comments)
+                .HasForeignKey(c => c.AuthorId)
+                .OnDelete(DeleteBehavior.NoAction);
             });
 
             modelBuilder.Entity<User>()

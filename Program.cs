@@ -21,4 +21,15 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+using var scope = app.Services.CreateScope();
+var dbContext = scope.ServiceProvider.GetRequiredService<MyBoardsContext>();
+
+//checked if there are any pending migrations
+var pendingMigrations = dbContext.Database.GetPendingMigrations();
+if (pendingMigrations.Any())
+{
+    //apply the migrations
+    dbContext.Database.Migrate();
+}
+
 app.Run();
