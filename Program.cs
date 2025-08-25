@@ -103,7 +103,20 @@ void ApplyPendingMigrations(IServiceProvider services)
         dbContext.SaveChanges();
     }
 }
-
 // Call the function before app.Run()
 ApplyPendingMigrations(app.Services);
+
+app.MapGet("dataEpic", (MyBoardsContext db) =>
+{
+    var epic = db.Epics.First();
+    var user = db.Users.First(u => u.FullName == "User One");
+    return new { epic, user };
+});
+
+app.MapGet("dataTags", (MyBoardsContext db) =>
+{
+    var tags = db.Tags.ToList();
+    return tags;
+});
+
 app.Run();
