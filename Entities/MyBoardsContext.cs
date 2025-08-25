@@ -112,6 +112,14 @@ namespace MyBoards.Entities
                 eb.Property(x => x.State).HasMaxLength(50);
                 eb.Property(x => x.State).IsRequired();
             });
+
+            //Database Seeding
+            modelBuilder.Entity<WorkItemState>()
+                .HasData(
+                new WorkItemState() { Id = 1, State = "To Do" },
+                new WorkItemState() { Id = 2, State = "Doing" },
+                new WorkItemState() { Id = 3, State = "Done" }
+            );
         }
     }
 }
