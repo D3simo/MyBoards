@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyBoards.Entities;
 
@@ -11,9 +12,11 @@ using MyBoards.Entities;
 namespace MyBoards.Migrations
 {
     [DbContext(typeof(MyBoardsContext))]
-    partial class MyBoardsContextModelSnapshot : ModelSnapshot
+    [Migration("20250825220208_test2")]
+    partial class test2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -206,7 +209,7 @@ namespace MyBoards.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Value")
+                    b.Property<string>("State")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
@@ -219,27 +222,17 @@ namespace MyBoards.Migrations
                         new
                         {
                             Id = 1,
-                            Value = "To Do"
+                            State = "To Do"
                         },
                         new
                         {
                             Id = 2,
-                            Value = "Doing"
+                            State = "Doing"
                         },
                         new
                         {
                             Id = 3,
-                            Value = "Done"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Value = "On Hold"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Value = "Rejected"
+                            State = "Done"
                         });
                 });
 

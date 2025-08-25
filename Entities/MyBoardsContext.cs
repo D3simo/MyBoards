@@ -75,7 +75,7 @@ namespace MyBoards.Entities
 
             modelBuilder.Entity<Issue>()
 
-                .Property(wi => wi.Effort)
+                .Property(wi => wi.Efford)
                 .HasColumnType("decimal(5, 2)");
 
             modelBuilder.Entity<Task>()
@@ -109,16 +109,27 @@ namespace MyBoards.Entities
 
             modelBuilder.Entity<WorkItemState>(eb =>
             {
-                eb.Property(x => x.State).HasMaxLength(50);
-                eb.Property(x => x.State).IsRequired();
+                eb.Property(x => x.Value).HasMaxLength(50);
+                eb.Property(x => x.Value).IsRequired();
             });
 
             //Database Seeding
             modelBuilder.Entity<WorkItemState>()
                 .HasData(
-                new WorkItemState() { Id = 1, State = "To Do" },
-                new WorkItemState() { Id = 2, State = "Doing" },
-                new WorkItemState() { Id = 3, State = "Done" }
+                new WorkItemState() { Id = 1, Value = "To Do" },
+                new WorkItemState() { Id = 2, Value = "Doing" },
+                new WorkItemState() { Id = 3, Value = "Done" },
+                new WorkItemState() { Id = 4, Value = "On Hold" },
+                new WorkItemState() { Id = 5, Value = "Rejected" }
+            );
+
+            modelBuilder.Entity<Tag>()
+                .HasData(
+                new Tag() { Id = 1, Value = "Web", Category = "IT" },
+                new Tag() { Id = 2, Value = "UI", Category = "IT" },
+                new Tag() { Id = 3, Value = "Desktop", Category = "IT" },
+                new Tag() { Id = 4, Value = "API", Category = "IT" },
+                new Tag() { Id = 5, Value = "Service", Category = "IT" }
             );
         }
     }

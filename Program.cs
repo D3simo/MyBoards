@@ -64,6 +64,44 @@ void ApplyPendingMigrations(IServiceProvider services)
         dbContext.Users.AddRange(user1, user2);
         dbContext.SaveChanges();
     }
+
+    // List of Tags
+    var tags = dbContext.Tags.ToList();
+    if (!tags.Any())
+    {
+        var tag1 = new Tag()
+        {
+            Id = 1,
+            Value = "Web",
+            Category = "IT"
+        };
+        var tag2 = new Tag()
+        {
+            Id = 2,
+            Value = "UI",
+            Category = "IT"
+        };
+        var tag3 = new Tag()
+        {
+            Id = 3,
+            Value = "Desktop",
+            Category = "IT"
+        };
+        var tag4 = new Tag()
+        {
+            Id = 4,
+            Value = "API",
+            Category = "IT"
+        };
+        var tag5 = new Tag()
+        {
+            Id = 5,
+            Value = "Service",
+            Category = "IT"
+        };
+        dbContext.Tags.AddRange(tag1, tag2, tag3, tag4, tag5);
+        dbContext.SaveChanges();
+    }
 }
 
 // Call the function before app.Run()

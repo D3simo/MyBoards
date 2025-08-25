@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyBoards.Entities;
 
@@ -11,9 +12,11 @@ using MyBoards.Entities;
 namespace MyBoards.Migrations
 {
     [DbContext(typeof(MyBoardsContext))]
-    partial class MyBoardsContextModelSnapshot : ModelSnapshot
+    [Migration("20250825221042_test4")]
+    partial class test4
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -230,16 +233,6 @@ namespace MyBoards.Migrations
                         {
                             Id = 3,
                             Value = "Done"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Value = "On Hold"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Value = "Rejected"
                         });
                 });
 
