@@ -106,11 +106,20 @@ void ApplyPendingMigrations(IServiceProvider services)
 // Call the function before app.Run()
 ApplyPendingMigrations(app.Services);
 
-app.MapGet("dataEpic", (MyBoardsContext db) =>
+app.MapGet("data", async (MyBoardsContext db) =>
 {
-    var epic = db.Epics.First();
-    var user = db.Users.First(u => u.FullName == "User One");
-    return new { epic, user };
+    //var epics = await db.Epics
+    //.Where(e => e.StateId == 4)
+    //.OrderBy(e => e.Priority)
+    //.ToListAsync();
+
+    var authors = await db.Comments
+    .GroupBy(e => e.AuthorId)
+    .Select(g => new { g.Key, Count = g.Count() })
+    .ToListAsync();
+
+    var topAuthors = authors.First(a => a.Count == authors.Max(acc => acc.Count));
+    return topAuthors;
 });
 
 app.MapGet("dataTags", (MyBoardsContext db) =>
