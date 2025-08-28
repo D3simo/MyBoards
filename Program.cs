@@ -113,19 +113,40 @@ app.MapGet("data", async (MyBoardsContext db) =>
     //.OrderBy(e => e.Priority)
     //.ToListAsync();
 
-    var authors = await db.Comments
+    var authors =  db.Comments
     .GroupBy(e => e.AuthorId)
-    .Select(g => new { g.Key, Count = g.Count() })
-    .ToListAsync();
+    .Select(g => new { g.Key, Count = g.Count() });
 
-    var topAuthors = authors.First(a => a.Count == authors.Max(acc => acc.Count));
-    return topAuthors;
+    var authorsCommentsCounts = await authors.ToListAsync();
+
+
+    var topAuthors = authors
+    .First(a => a.Count == authors
+    .Max(acc => acc.Count));
+
+    var userDetails = db.Users
+    .First(u => u.Id == topAuthors.Key);
+
+    return new { userDetails, commCount = topAuthors.Count };
 });
 
 app.MapGet("dataTags", (MyBoardsContext db) =>
 {
     var tags = db.Tags.ToList();
     return tags;
+});
+
+app.MapPost("update", async (MyBoardsContext db) =>
+{ 
+    var epic = await db.Epics.FirstAsync(e => e.Id == 1);
+
+    epic.Area = "Updated Area";
+    epic.Priority = 1;
+    epic.StartDate = DateTime.Now;
+
+    await db.SaveChangesAsync();
+
+    return epic;
 });
 
 app.Run();
