@@ -149,4 +149,15 @@ app.MapPost("update", async (MyBoardsContext db) =>
     return epic;
 });
 
+app.MapPost("create", async (MyBoardsContext db) =>
+{
+    Tag tag = new Tag()
+    {
+        Value = "NewTag",
+        Category = "NewCategory"
+    };
+
+    await db.Tags.AddAsync(tag);
+    await db.SaveChangesAsync();
+});
 app.Run();
