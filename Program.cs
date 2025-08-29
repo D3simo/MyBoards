@@ -1,5 +1,8 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Win32;
 using MyBoards.Entities;
+using System.Net.NetworkInformation;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Registers MyBoardsContext to use SQL Server with the connection string
 builder.Services.AddDbContext<MyBoardsContext>(
         option => option.UseSqlServer(builder.Configuration.GetConnectionString("MyBoardsConnectionString"))
     );
@@ -151,13 +155,27 @@ app.MapPost("update", async (MyBoardsContext db) =>
 
 app.MapPost("create", async (MyBoardsContext db) =>
 {
-    Tag tag = new Tag()
+    var address = new Address()
     {
-        Value = "NewTag",
-        Category = "NewCategory"
+        Id = Guid.NewGuid(),
+        Street = "789 Main St",
+        City = "Anytown",
+        Country = "USA",
     };
 
-    await db.Tags.AddAsync(tag);
+    db.Addresses.Add(address);
+
+    var user = new User()
+    {
+        FullName = "Jane Smith",
+        Email = "test@gmail.com",
+        Address = address,
+    };
+
+    db.Users.Add(user);
     await db.SaveChangesAsync();
+
+    return user;
 });
+
 app.Run();
