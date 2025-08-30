@@ -13,8 +13,12 @@ builder.Services.AddSwaggerGen();
 
 // Registers MyBoardsContext to use SQL Server with the connection string
 builder.Services.AddDbContext<MyBoardsContext>(
-        option => option.UseSqlServer(builder.Configuration.GetConnectionString("MyBoardsConnectionString"))
-    );
+    option => option.UseSqlServer(builder.Configuration.GetConnectionString("MyBoardsConnectionString"))
+);
+
+builder.Services.AddControllers().AddJsonOptions(x =>
+    x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles
+);
 
 var app = builder.Build();
 
@@ -162,8 +166,6 @@ app.MapPost("create", async (MyBoardsContext db) =>
         City = "Anytown",
         Country = "USA",
     };
-
-    db.Addresses.Add(address);
 
     var user = new User()
     {
