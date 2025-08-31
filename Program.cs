@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Win32;
 using MyBoards.Entities;
@@ -11,19 +12,21 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Registers MyBoardsContext to use SQL Server with the connection string
-builder.Services.AddDbContext<MyBoardsContext>(
-    option => option.UseSqlServer(builder.Configuration.GetConnectionString("MyBoardsConnectionString"))
-);
-
+// To prevent cyclical references during JSON serialization
 builder.Services.AddControllers().AddJsonOptions(x =>
     x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles
 );
 
-builder.Services.AddControllers().AddJsonOptions(options =>
+// only using minimal APIs without controllers:
+builder.Services.Configure<JsonOptions>(options =>
 {
-    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+    options.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
 });
+
+// Registers MyBoardsContext to use SQL Server with the connection string
+builder.Services.AddDbContext<MyBoardsContext>(
+    option => option.UseSqlServer(builder.Configuration.GetConnectionString("MyBoardsConnectionString"))
+);
 
 var app = builder.Build();
 
@@ -145,11 +148,14 @@ app.MapGet("data", async (MyBoardsContext db) =>
 
 app.MapGet("userComments", async (MyBoardsContext db) =>
 {
-    var user = await db.Users.FirstAsync(u => u.Id == Guid.Parse("6EB04543-F56B-4827-CC11-08DA10AB0E61"));
-    var userComments = await db.Comments.Where(c => c.AuthorId == user.Id)
-        .ToListAsync();
+    var user = await db.Users
+    //Add related Commnets to the User
+    .Include(u => u.Comments)
+    .FirstAsync(u => u.Id == Guid.Parse("6EB04543-F56B-4827-CC11-08DA10AB0E61"));
+    //var userComments = await db.Comments.Where(c => c.AuthorId == user.Id)
+    //    .ToListAsync();
 
-    return userComments;
+    return user;
 });
 
 app.MapGet("dataTags", (MyBoardsContext db) =>
