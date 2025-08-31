@@ -20,6 +20,11 @@ builder.Services.AddControllers().AddJsonOptions(x =>
     x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles
 );
 
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -136,6 +141,15 @@ app.MapGet("data", async (MyBoardsContext db) =>
     .First(u => u.Id == topAuthors.Key);
 
     return new { userDetails, commCount = topAuthors.Count };
+});
+
+app.MapGet("userComments", async (MyBoardsContext db) =>
+{
+    var user = await db.Users.FirstAsync(u => u.Id == Guid.Parse("6EB04543-F56B-4827-CC11-08DA10AB0E61"));
+    var userComments = await db.Comments.Where(c => c.AuthorId == user.Id)
+        .ToListAsync();
+
+    return userComments;
 });
 
 app.MapGet("dataTags", (MyBoardsContext db) =>
