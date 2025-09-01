@@ -146,11 +146,13 @@ app.MapGet("data", async (MyBoardsContext db) =>
     return new { userDetails, commCount = topAuthors.Count };
 });
 
-app.MapGet("userComments", async (MyBoardsContext db) =>
+app.MapGet("userRelatedData", async (MyBoardsContext db) =>
 {
     var user = await db.Users
-    //Add related Commnets to the User
-    .Include(u => u.Comments)
+    //Add related Commnets to the User and related WorkItems to the Comments
+    .Include(u => u.Comments).ThenInclude(c => c.WorkItem)
+    //Add related Address to the User
+    .Include(u => u.Address)
     .FirstAsync(u => u.Id == Guid.Parse("6EB04543-F56B-4827-CC11-08DA10AB0E61"));
     //var userComments = await db.Comments.Where(c => c.AuthorId == user.Id)
     //    .ToListAsync();
@@ -198,6 +200,36 @@ app.MapPost("create", async (MyBoardsContext db) =>
     await db.SaveChangesAsync();
 
     return user;
+});
+
+app.MapDelete("deleteCascade", async (MyBoardsContext db) =>
+{
+    var workItemTag = await db.WorkItemTag
+    .Where(wt => wt.WorkItemId == 12)
+    .ToListAsync();
+    db.WorkItemTag.RemoveRange(workItemTag);
+
+    var workItem = await db.WorkItems
+    .FirstAsync(w => w.Id == 16);
+    db.RemoveRange(workItem);
+
+    await db.SaveChangesAsync();
+    return Results.Ok();
+});
+
+app.MapDelete("deleteNoCascade", async (MyBoardsContext db) =>
+{
+    //DeleteBehavior related Comments
+    var comments = await db.Comments
+    .Where(c => c.AuthorId == Guid.Parse("8ACE902E-A25C-4168-CBC1-08DA10AB0E61")).ToListAsync();
+    db.Comments.RemoveRange(comments);
+
+    var author = await db.Users
+    .FirstAsync(wt => wt.Id == Guid.Parse("8ACE902E-A25C-4168-CBC1-08DA10AB0E61"));
+    db.Users.Remove(author);
+
+    await db.SaveChangesAsync();
+    return Results.Ok();
 });
 
 app.Run();
