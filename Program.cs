@@ -211,21 +211,24 @@ app.MapDelete("deleteCascade", async (MyBoardsContext db) =>
 
     var workItem = await db.WorkItems
     .FirstAsync(w => w.Id == 16);
+    //Remove range if multiple
     db.RemoveRange(workItem);
 
     await db.SaveChangesAsync();
     return Results.Ok();
 });
 
-app.MapDelete("deleteNoCascade", async (MyBoardsContext db) =>
+app.MapDelete("deleteCommnentsCascade", async (MyBoardsContext db) =>
 {
-    //DeleteBehavior related Comments
-    var comments = await db.Comments
-    .Where(c => c.AuthorId == Guid.Parse("8ACE902E-A25C-4168-CBC1-08DA10AB0E61")).ToListAsync();
-    db.Comments.RemoveRange(comments);
-
     var author = await db.Users
+    .Include(u => u.Comments)
     .FirstAsync(wt => wt.Id == Guid.Parse("8ACE902E-A25C-4168-CBC1-08DA10AB0E61"));
+
+    ////DeleteBehavior related Comments
+    //var comments = db.Comments
+    //.Where(c => c.AuthorId == author.Id).ToList();
+    //db.Comments.RemoveRange(comments);
+
     db.Users.Remove(author);
 
     await db.SaveChangesAsync();

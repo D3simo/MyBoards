@@ -19,7 +19,7 @@ namespace MyBoards.Entities
         public DbSet<Tag> Tags { get; set; }
         public DbSet<Comment> Comments { get; set; }
         public DbSet<WorkItemState> WorkItemStates { get; set; }
-        public DbSet<WorkItemTag> WorkItemTags { get; set; }
+        public DbSet<WorkItemTag> WorkItemTag { get; set; }
 
         // database model configuration
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -98,7 +98,8 @@ namespace MyBoards.Entities
                 eb.HasOne(c => c.Author)
                 .WithMany(u => u.Comments)
                 .HasForeignKey(c => c.AuthorId)
-                .OnDelete(DeleteBehavior.NoAction);
+                // Cascade
+                .OnDelete(DeleteBehavior.ClientCascade);
             });
 
             modelBuilder.Entity<User>()
