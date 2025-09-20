@@ -146,14 +146,28 @@ app.MapGet("data", async (MyBoardsContext db) =>
     return new { userDetails, commCount = topAuthors.Count };
 });
 
-app.MapGet("userRelatedData", async (MyBoardsContext db) =>
+app.MapGet("userDataChangeTracker", async (MyBoardsContext db) =>
 {
     var user = await db.Users
-    //Add related Commnets to the User and related WorkItems to the Comments
-    .Include(u => u.Comments).ThenInclude(c => c.WorkItem)
-    //Add related Address to the User
-    .Include(u => u.Address)
     .FirstAsync(u => u.Id == Guid.Parse("6EB04543-F56B-4827-CC11-08DA10AB0E61"));
+
+    var entries = db.ChangeTracker.Entries();
+
+    db.Users.Remove(user);
+
+    var newUser = new User()
+    {
+        FullName = "New User",
+        Email = "doe2@o2.pl",
+    };
+    db.Users.Add(newUser);
+
+    var entries2 = db.ChangeTracker.Entries();
+    db.SaveChanges();
+    //Add related Commnets to the User and related WorkItems to the Comments
+    //.Include(u => u.Comments).ThenInclude(c => c.WorkItem)
+    //Add related Address to the User
+    //.Include(u => u.Address)
     //var userComments = await db.Comments.Where(c => c.AuthorId == user.Id)
     //    .ToListAsync();
 
@@ -162,7 +176,9 @@ app.MapGet("userRelatedData", async (MyBoardsContext db) =>
 
 app.MapGet("dataTags", (MyBoardsContext db) =>
 {
-    var tags = db.Tags.ToList();
+    var tags = db.Tags
+    .AsNoTracking()
+    .ToList();
     return tags;
 });
 
@@ -232,6 +248,20 @@ app.MapDelete("deleteCommnentsCascade", async (MyBoardsContext db) =>
     db.Users.Remove(author);
 
     await db.SaveChangesAsync();
+    return Results.Ok();
+});
+
+app.MapDelete("deleteWithChangeTracker", async (MyBoardsContext db) =>
+{
+    var workItem = new Epic
+    {
+        Id = 12
+    };
+
+    var entry = db.Attach(workItem);
+    entry.State = EntityState.Deleted;
+
+   db.SaveChanges();
     return Results.Ok();
 });
 
