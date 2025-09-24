@@ -22,7 +22,7 @@ namespace MyBoards.Migrations
                 principalColumn: "Id");
 
             migrationBuilder.Sql(@"
-CRESTE VIEW View_TopAuthors AS
+CREATE VIEW View_TopAuthors AS
 SELECT TOP 5 u.FullName, COUNT(*) as [WorkItemsCreated]
 FROM Users u
 JOIN WorkItems wi on wi.AuthorId = u.Id
