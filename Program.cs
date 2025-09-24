@@ -123,27 +123,10 @@ void ApplyPendingMigrations(IServiceProvider services)
 // Call the function before app.Run()
 ApplyPendingMigrations(app.Services);
 
-app.MapGet("data", async (MyBoardsContext db) =>
+app.MapGet("data", (MyBoardsContext db) =>
 {
-    //var epics = await db.Epics
-    //.Where(e => e.StateId == 4)
-    //.OrderBy(e => e.Priority)
-    //.ToListAsync();
-    var minWorkItemCount = 85;
-
-    var states = await db.WorkItemStates
-    .FromSqlInterpolated($@"
-SELECT wis.Id, wis.Value
-FROM WorkItemStates wis
-JOIN WorkItems wi on wi.StateId = wis.Id
-GROUP BY wis.Id, wis.Value
-HAVING COUNT(*) > { minWorkItemCount }"
-)
-    .ToListAsync();
-
-    var entries = db.ChangeTracker.Entries();
-
-    return states;
+    var topAuthors = db.ViewTopAuthors.ToList();
+    return topAuthors;
 });
 
 app.MapGet("dataTags", (MyBoardsContext db) =>
