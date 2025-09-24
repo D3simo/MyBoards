@@ -131,7 +131,7 @@ app.MapGet("data", async (MyBoardsContext db) =>
     //.ToListAsync();
     var minWorkItemCount = 85;
 
-    var states = db.WorkItemStates
+    var states = await db.WorkItemStates
     .FromSqlInterpolated($@"
 SELECT wis.Id, wis.Value
 FROM WorkItemStates wis
@@ -139,7 +139,7 @@ JOIN WorkItems wi on wi.StateId = wis.Id
 GROUP BY wis.Id, wis.Value
 HAVING COUNT(*) > { minWorkItemCount }"
 )
-    .ToList();
+    .ToListAsync();
 
     var entries = db.ChangeTracker.Entries();
 

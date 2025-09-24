@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using MyBoards.Entities.ViewModels;
 
 namespace MyBoards.Entities
 {
@@ -20,6 +21,7 @@ namespace MyBoards.Entities
         public DbSet<Comment> Comments { get; set; }
         public DbSet<WorkItemState> WorkItemStates { get; set; }
         public DbSet<WorkItemTag> WorkItemTag { get; set; }
+        public DbSet<TopAuthor> ViewTopAuthors { get; set; } // ViewModel for SQL View
 
         // database model configuration
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -134,6 +136,12 @@ namespace MyBoards.Entities
                 new Tag() { Id = 4, Value = "API", Category = "IT" },
                 new Tag() { Id = 5, Value = "Service", Category = "IT" }
             );
+
+            modelBuilder.Entity<TopAuthor>(eb =>
+            {
+                eb.ToView("View_TopAuthors");
+                eb.HasNoKey();
+            });
         }
     }
 }
