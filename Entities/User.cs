@@ -9,12 +9,12 @@ namespace MyBoards.Entities
         public string Email { get; set; }
 
         // Reference do Address entity
-        public Address Address { get; set; }
+        public virtual Address Address { get; set; }
 
         // configure relation 1:n with WorkItem entity // with blank list
-        public List<WorkItem> WorkItem { get; set; } = [];
+        public virtual List<WorkItem> WorkItem { get; set; } = [];
 
         // configure relation 1:n with Comment entity // with blank list
-        public List<Comment> Comments { get; set; } = [];
+        public virtual List<Comment> Comments { get; set; } = [];
     }
 }

@@ -42,7 +42,8 @@ namespace MyBoards.Entities
                 // configure relation with User entity
                 eb.HasOne(w => w.Author)
                 .WithMany(c => c.WorkItem)
-                .HasForeignKey(c => c.AuthorId);
+                .HasForeignKey(c => c.AuthorId)
+                .OnDelete(DeleteBehavior.Restrict); // Prevent cascade delete for WorkItems
 
                 eb.Property(wi => wi.Priority).HasDefaultValue(1);
 

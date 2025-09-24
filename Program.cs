@@ -4,6 +4,7 @@ using Microsoft.Win32;
 using MyBoards.Entities;
 using System.Net.NetworkInformation;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -128,50 +129,21 @@ app.MapGet("data", async (MyBoardsContext db) =>
     //.Where(e => e.StateId == 4)
     //.OrderBy(e => e.Priority)
     //.ToListAsync();
+    var minWorkItemCount = 85;
 
-    var authors =  db.Comments
-    .GroupBy(e => e.AuthorId)
-    .Select(g => new { g.Key, Count = g.Count() });
-
-    var authorsCommentsCounts = await authors.ToListAsync();
-
-
-    var topAuthors = authors
-    .First(a => a.Count == authors
-    .Max(acc => acc.Count));
-
-    var userDetails = db.Users
-    .First(u => u.Id == topAuthors.Key);
-
-    return new { userDetails, commCount = topAuthors.Count };
-});
-
-app.MapGet("userDataChangeTracker", async (MyBoardsContext db) =>
-{
-    var user = await db.Users
-    .FirstAsync(u => u.Id == Guid.Parse("6EB04543-F56B-4827-CC11-08DA10AB0E61"));
+    var states = db.WorkItemStates
+    .FromSqlInterpolated($@"
+SELECT wis.Id, wis.Value
+FROM WorkItemStates wis
+JOIN WorkItems wi on wi.StateId = wis.Id
+GROUP BY wis.Id, wis.Value
+HAVING COUNT(*) > { minWorkItemCount }"
+)
+    .ToList();
 
     var entries = db.ChangeTracker.Entries();
 
-    db.Users.Remove(user);
-
-    var newUser = new User()
-    {
-        FullName = "New User",
-        Email = "doe2@o2.pl",
-    };
-    db.Users.Add(newUser);
-
-    var entries2 = db.ChangeTracker.Entries();
-    db.SaveChanges();
-    //Add related Commnets to the User and related WorkItems to the Comments
-    //.Include(u => u.Comments).ThenInclude(c => c.WorkItem)
-    //Add related Address to the User
-    //.Include(u => u.Address)
-    //var userComments = await db.Comments.Where(c => c.AuthorId == user.Id)
-    //    .ToListAsync();
-
-    return user;
+    return states;
 });
 
 app.MapGet("dataTags", (MyBoardsContext db) =>
