@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http.Json;
+using Microsoft.AspNetCore.Mvc.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Win32;
 using MyBoards.Dto;
@@ -29,7 +30,7 @@ builder.Services.Configure<JsonOptions>(options =>
 builder.Services.AddDbContext<MyBoardsContext>(
     option => option
         // Enable Lazy Loading - requires virtual navigation properties
-        //.UseLazyLoadingProxies() 
+        //.UseLazyLoadingProxies()
         .UseSqlServer(builder.Configuration.GetConnectionString("MyBoardsConnectionString"))
 );
 
@@ -203,6 +204,81 @@ app.MapGet("pagination", (MyBoardsContext db) =>
 
     var pagedResult = new PagedResult<User>(result, queryCount, pageSize, pageNumber);
     return pagedResult;
+});
+
+app.MapGet("dataSelect", async (MyBoardsContext db) =>
+{
+    var comments = await db.Users
+        .Include(u => u.Address)
+        .Include(u => u.Comments)
+        .Where(u => u.Address.Country == "Albania")
+        .SelectMany(u => u.Comments)
+        .Select(c => c.Message)
+        .ToListAsync();
+
+    return comments;
+});
+
+app.MapGet("n+1 problem | LazyLoading enabled", async (MyBoardsContext db) =>
+{
+    var users = await db.Users
+        .Include(u => u.Address)
+        .Include(u => u.Comments)
+        .Where(u => u.Address.Country == "Albania")
+        .ToListAsync();
+
+    foreach (var user in users)
+    {
+        foreach (var comment in user.Comments)
+        {
+            // Process(comment);
+        }
+    }
+});
+
+//Before.NET 7
+//app.MapPut("updateLinq2Db", async (MyBoardsContext db) =>
+//{
+//    var users = db.Users
+//        .Where(u => u.FullName == "John");
+
+//    await LinqToDB.LinqExtensions.UpdateAsync(users.ToLinqToDB, x => new User
+//    {
+//        Comments = "New User"
+//    });
+//});
+
+app.MapPut("updateBulk", async (MyBoardsContext db) =>
+{
+    var users = await db.Users
+        .Where(u => u.FullName == "John")
+        .ToListAsync();
+    foreach (var user in users)
+    {
+        user.FullName = "Test User John";
+    }
+
+    await db.SaveChangesAsync();
+});
+
+app.MapPut("updateBulkRefactored", async (MyBoardsContext db) =>
+{
+    var users = db.Users
+        .Where(u => u.FullName == "John");
+
+    await users
+        .ExecuteUpdateAsync(s =>
+            s.SetProperty(u => u.FullName, "Test User John"));
+
+    await db.SaveChangesAsync();
+});
+
+app.MapPut("updateBulk>>.NET7", async (MyBoardsContext db) =>
+{
+    await db.Users
+        .Where(u => u.FullName.Contains("John"))
+        .ExecuteUpdateAsync(s => 
+            s.SetProperty(e => e.FullName, "John 7+"));
 });
 
 app.MapPost("update", async (MyBoardsContext db) =>

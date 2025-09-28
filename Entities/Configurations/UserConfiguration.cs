@@ -11,6 +11,9 @@ namespace MyBoards.Entities.Configurations
             us.HasOne(u => u.Address)
             .WithOne(a => a.User)
             .HasForeignKey<Address>(a => a.UserId);
+
+            us.HasIndex(u => new { u.Email, u.FullName })
+                .IsUnique();
         }
     }
 }
