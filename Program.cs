@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Win32;
+using MyBoards.Dto;
 using MyBoards.Entities;
 using MyBoards.Migrations;
+using System.Linq.Expressions;
 using System.Net.NetworkInformation;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
@@ -13,12 +15,10 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
 // To prevent cyclical references during JSON serialization
 builder.Services.AddControllers().AddJsonOptions(x =>
     x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles
 );
-
 // only using minimal APIs without controllers:
 builder.Services.Configure<JsonOptions>(options =>
 {
@@ -28,8 +28,8 @@ builder.Services.Configure<JsonOptions>(options =>
 // Registers MyBoardsContext to use SQL Server with the connection string
 builder.Services.AddDbContext<MyBoardsContext>(
     option => option
-        // Enable Lazy Loading
-        .UseLazyLoadingProxies() 
+        // Enable Lazy Loading - requires virtual navigation properties
+        //.UseLazyLoadingProxies() 
         .UseSqlServer(builder.Configuration.GetConnectionString("MyBoardsConnectionString"))
 );
 
@@ -142,7 +142,7 @@ app.MapGet("dataTags", async (MyBoardsContext db) =>
     return tags;
 });
 
-app.MapGet("FilterData", async (MyBoardsContext db) =>
+app.MapGet("filterData", async (MyBoardsContext db) =>
 {
     var filterAdresses = await db.Addresses.Where(a => a.Coordinate.Latitude > 10).ToListAsync();
     return filterAdresses;
@@ -162,6 +162,47 @@ app.MapGet("dataLazyLoading", async (MyBoardsContext db) =>
         return result;
     }
     return new { FullName = user.FullName, Address = "" };
+});
+
+app.MapGet("pagination", (MyBoardsContext db) =>
+{
+    var filter = "a";
+    string sortBy = "FullName";
+    bool sortByDescending = false;
+    int pageNumber = 1;
+    int pageSize = 10;
+
+    // Filtering
+    var query = db.Users
+        .Where(u => filter == null ||
+            (u.Email.ToLower().Contains(filter.ToLower()) || u.FullName.ToLower().Contains(filter.ToLower())));
+
+    var queryCount = query.Count();
+
+
+    // Sorting
+    if (sortBy != null)
+    {
+        var columnsSelector = new Dictionary<string, Expression<Func<User, object>>>
+        {
+            { nameof(User.FullName), u => u.FullName },
+            { nameof(User.Email), u => u.Email },
+        };
+
+        var sortByExpression = columnsSelector[sortBy];
+
+        query = sortByDescending 
+            ? query.OrderByDescending(sortByExpression) 
+            : query.OrderBy(sortByExpression);
+    }
+
+    // Pagination
+    var result = query.Skip(pageSize * (pageNumber - 1))
+        .Take(pageSize)
+        .ToList();
+
+    var pagedResult = new PagedResult<User>(result, queryCount, pageSize, pageNumber);
+    return pagedResult;
 });
 
 app.MapPost("update", async (MyBoardsContext db) =>
