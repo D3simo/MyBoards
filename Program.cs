@@ -1,16 +1,19 @@
 using Microsoft.AspNetCore.Http.Json;
-using Microsoft.AspNetCore.Mvc.Diagnostics;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Win32;
+using MyBoards;
 using MyBoards.Dto;
 using MyBoards.Entities;
-using MyBoards.Migrations;
+using MyBoards.Sieve;
+using Sieve.Models;
+using Sieve.Services;
 using System.Linq.Expressions;
-using System.Net.NetworkInformation;
 using System.Text.Json.Serialization;
-using System.Text.RegularExpressions;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Register Sieve services
+builder.Services.AddScoped<ISieveProcessor, ApplicationSieveProcessor>();
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -21,7 +24,7 @@ builder.Services.AddControllers().AddJsonOptions(x =>
     x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles
 );
 // only using minimal APIs without controllers:
-builder.Services.Configure<JsonOptions>(options =>
+builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
 {
     options.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
 });
@@ -43,6 +46,32 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.MapPost("sieve", async([FromBody]SieveModel query, ISieveProcessor sieveProcessor, MyBoardsContext db) => {
+    var epics = db.Epics
+        .Include(e => e.Author)
+        .AsQueryable();
+    var dtos = await sieveProcessor
+        .Apply(query, epics)
+        .Select(e => new EpicDto()
+        {
+            Id = e.Id,
+            Area = e.Area,
+            Priority = e.Priority,
+            StartDate = e.StartDate,
+            AuthorFullName = e.Author.FullName
+        })
+        .ToListAsync();
+
+    var totalCount = await sieveProcessor
+        .Apply(query, epics, applyFiltering: false, applySorting: false)
+        .CountAsync();
+
+    // pagination
+    var result = new PagedResult<EpicDto>(dtos, totalCount, query.Page.Value, query.PageSize.Value);
+
+    return result;
+});
+
 void ApplyPendingMigrations(IServiceProvider services)
 {
     using var scope = services.CreateScope();
@@ -52,6 +81,9 @@ void ApplyPendingMigrations(IServiceProvider services)
     {
         dbContext.Database.Migrate();
     }
+
+    // Seed initial data
+    DataGenerator.Seed(dbContext);
 
     //List of Users
     var users = dbContext.Users.ToList();

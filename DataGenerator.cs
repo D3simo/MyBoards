@@ -5,9 +5,14 @@ namespace MyBoards
 {
     public class DataGenerator
     {
-        public void Seed(MyBoardsContext context)
+        public static void Seed(MyBoardsContext context)
         {
-            var addressGenerator = new Faker<Address>()
+            var locale = "pl";
+
+            Randomizer.Seed = new Random(8675309);
+
+            var addressGenerator = new Faker<Address>(locale)
+                //.StrictMode(true) // all properties must be defined
                 .RuleFor(a => a.City, f => f.Address.City())
                 .RuleFor(a => a.Country, f => f.Address.Country())
                 .RuleFor(a => a.Street, f => f.Address.StreetName())
@@ -16,7 +21,6 @@ namespace MyBoards
             Address address = addressGenerator.Generate();
 
             var userGenerator = new Faker<User>()
-                //.RuleFor(u => u.Id, f => Guid.NewGuid())
                 .RuleFor(u => u.FullName, f => f.Person.FullName)
                 .RuleFor(u => u.Email, f => f.Person.Email)
                 .RuleFor(u => u.Address, f => addressGenerator.Generate());
@@ -24,6 +28,9 @@ namespace MyBoards
             User user = userGenerator.Generate();
 
             var users = userGenerator.Generate(100);
+
+            context.AddRange(users);
+            context.SaveChanges();
         }
     }
 }
