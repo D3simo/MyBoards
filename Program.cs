@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Http.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Win32;
 using MyBoards.Entities;
+using MyBoards.Migrations;
 using System.Net.NetworkInformation;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
@@ -26,7 +27,10 @@ builder.Services.Configure<JsonOptions>(options =>
 
 // Registers MyBoardsContext to use SQL Server with the connection string
 builder.Services.AddDbContext<MyBoardsContext>(
-    option => option.UseSqlServer(builder.Configuration.GetConnectionString("MyBoardsConnectionString"))
+    option => option
+        // Enable Lazy Loading
+        .UseLazyLoadingProxies() 
+        .UseSqlServer(builder.Configuration.GetConnectionString("MyBoardsConnectionString"))
 );
 
 var app = builder.Build();
@@ -123,25 +127,41 @@ void ApplyPendingMigrations(IServiceProvider services)
 // Call the function before app.Run()
 ApplyPendingMigrations(app.Services);
 
-app.MapGet("data", (MyBoardsContext db) =>
+app.MapGet("data", async (MyBoardsContext db) =>
 {
     //retrieve top authors from sql view
-    var topAuthors = db.ViewTopAuthors.ToList();
+    var topAuthors = await db.ViewTopAuthors.ToListAsync();
     return topAuthors;
 });
 
-app.MapGet("dataTags", (MyBoardsContext db) =>
+app.MapGet("dataTags", async (MyBoardsContext db) =>
 {
-    var tags = db.Tags
+    var tags = await db.Tags
     .AsNoTracking()
-    .ToList();
+    .ToListAsync();
     return tags;
 });
 
-app.MapGet("FilterData", (MyBoardsContext db) =>
+app.MapGet("FilterData", async (MyBoardsContext db) =>
 {
-    var filterAdresses = db.Addresses.Where(a => a.Coordinate.Latitude > 10);
+    var filterAdresses = await db.Addresses.Where(a => a.Coordinate.Latitude > 10).ToListAsync();
     return filterAdresses;
+});
+
+app.MapGet("dataLazyLoading", async (MyBoardsContext db) =>
+{
+    // Variable used for LazyLoading
+    var withAddress = true;
+
+    var user = await db.Users
+        .FirstAsync(wt => wt.Id == Guid.Parse("8ACE902E-A25C-4168-CBC1-08DA10AB0E61"));
+    if (withAddress)
+    {
+        // Lazy Loading
+        var result = new { FullName = user.FullName, Address = $"{user.Address.Street} {user.Address.City}" };
+        return result;
+    }
+    return new { FullName = user.FullName, Address = "" };
 });
 
 app.MapPost("update", async (MyBoardsContext db) =>
@@ -213,7 +233,7 @@ app.MapDelete("deleteCommnentsCascade", async (MyBoardsContext db) =>
     return Results.Ok();
 });
 
-app.MapDelete("deleteWithChangeTracker", async (MyBoardsContext db) =>
+app.MapDelete("deleteWithChangeTracker", (MyBoardsContext db) =>
 {
     var workItem = new Epic
     {

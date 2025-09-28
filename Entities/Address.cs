@@ -12,11 +12,11 @@ namespace MyBoards.Entities
         public string Street { get; set; }
         public string PostalCode { get; set; }
 
-        // Reference do User entity
-        public User User { get; set; }
+        // Reference to User entity
+        public virtual User User { get; set; }
 
         // Foreign key to User
-         public Guid UserId { get; set; }
+        public Guid UserId { get; set; }
 
         // Foreign key to Coordinates
         public Coordinate Coordinate { get; set; }
