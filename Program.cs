@@ -63,7 +63,7 @@ app.MapPost("sieve", async([FromBody]SieveModel query, ISieveProcessor sieveProc
         .ToListAsync();
 
     var totalCount = await sieveProcessor
-        .Apply(query, epics, applyFiltering: false, applySorting: false)
+        .Apply(query, epics, applyPagination: false, applySorting: false)
         .CountAsync();
 
     // pagination
