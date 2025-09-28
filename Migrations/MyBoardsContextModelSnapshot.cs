@@ -48,7 +48,7 @@ namespace MyBoards.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Addresses");
+                    b.ToTable("Addresses", (string)null);
                 });
 
             modelBuilder.Entity("MyBoards.Entities.Comment", b =>
@@ -83,7 +83,7 @@ namespace MyBoards.Migrations
 
                     b.HasIndex("WorkItemId");
 
-                    b.ToTable("Comments");
+                    b.ToTable("Comments", (string)null);
                 });
 
             modelBuilder.Entity("MyBoards.Entities.Tag", b =>
@@ -102,7 +102,7 @@ namespace MyBoards.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Tags");
+                    b.ToTable("Tags", (string)null);
 
                     b.HasData(
                         new
@@ -151,7 +151,7 @@ namespace MyBoards.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("MyBoards.Entities.ViewModels.TopAuthor", b =>
@@ -204,7 +204,7 @@ namespace MyBoards.Migrations
 
                     b.HasIndex("StateId");
 
-                    b.ToTable("WorkItems");
+                    b.ToTable("WorkItems", (string)null);
 
                     b.HasDiscriminator().HasValue("WorkItem");
 
@@ -226,7 +226,7 @@ namespace MyBoards.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("WorkItemStates");
+                    b.ToTable("WorkItemStates", (string)null);
 
                     b.HasData(
                         new
@@ -273,7 +273,7 @@ namespace MyBoards.Migrations
 
                     b.HasIndex("WorkItemId");
 
-                    b.ToTable("WorkItemTag");
+                    b.ToTable("WorkItemTag", (string)null);
                 });
 
             modelBuilder.Entity("MyBoards.Entities.Epic", b =>
@@ -323,7 +323,7 @@ namespace MyBoards.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsOne("MyBoards.Entities.Coordinate", "Coordinate", b1 =>
+                    b.OwnsOne("MyBoards.Entities.Address.Coordinate#MyBoards.Entities.Coordinate", "Coordinate", b1 =>
                         {
                             b1.Property<Guid>("AddressId")
                                 .HasColumnType("uniqueidentifier");
@@ -338,7 +338,7 @@ namespace MyBoards.Migrations
 
                             b1.HasKey("AddressId");
 
-                            b1.ToTable("Addresses");
+                            b1.ToTable("Addresses", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("AddressId");
