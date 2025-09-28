@@ -125,6 +125,7 @@ ApplyPendingMigrations(app.Services);
 
 app.MapGet("data", (MyBoardsContext db) =>
 {
+    //retrieve top authors from sql view
     var topAuthors = db.ViewTopAuthors.ToList();
     return topAuthors;
 });
@@ -135,6 +136,12 @@ app.MapGet("dataTags", (MyBoardsContext db) =>
     .AsNoTracking()
     .ToList();
     return tags;
+});
+
+app.MapGet("FilterData", (MyBoardsContext db) =>
+{
+    var filterAdresses = db.Addresses.Where(a => a.Coordinate.Latitude > 10);
+    return filterAdresses;
 });
 
 app.MapPost("update", async (MyBoardsContext db) =>

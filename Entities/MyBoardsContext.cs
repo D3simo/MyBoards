@@ -3,6 +3,7 @@ using MyBoards.Entities.ViewModels;
 
 namespace MyBoards.Entities
 {
+    // class derived from System.Data.Entity.DbContext
     public class MyBoardsContext : DbContext
     {
         // construct
@@ -10,7 +11,7 @@ namespace MyBoards.Entities
         {
             
         }
-        // WorkItem tab with WorkItem properties
+        // Entity sets (tables in the database)
         public DbSet<WorkItem> WorkItems { get; set; }
         public DbSet<Epic> Epics { get; set; }
         public DbSet<Issue> Issues { get; set; }
@@ -142,6 +143,13 @@ namespace MyBoards.Entities
                 eb.ToView("View_TopAuthors");
                 eb.HasNoKey();
             });
+
+            modelBuilder.Entity<Address>()
+                .OwnsOne(a => a.Coordinate, cb =>
+                {
+                    cb.Property(c => c.Latitude).HasPrecision(18,7);
+                    cb.Property(c => c.Longtitude).HasPrecision(18, 7);
+                });
         }
     }
 }
